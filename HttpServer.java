@@ -32,9 +32,14 @@ class HttpServerHandler implements Runnable {
 	}
 	
 	public void run(){
+		Scanner httpRequest;
+		int i =0;
 		try{
-			BufferedReader testServerReader = new BufferedReader(new InputStreamReader(incoming.getInputStream())); 
-			while((line =testServerReader.readLine()) != null){
+			Scanner testServerReader = new Scanner(new InputStreamReader(incoming.getInputStream())); 
+			while(testServerReader.hasNextLine()){
+				line = testServerReader.nextLine();
+				String [] lineTokens = line.split(" ");
+				if(lineTokens[0].equals("GET")){ handleGet(lineTokens);}
 				if(line.contentEquals("")) System.out.println("rn");
 				else System.out.println(line);
 			};
@@ -42,6 +47,12 @@ class HttpServerHandler implements Runnable {
 		catch (IOException e){
 			System.out.println("Bła∂ w metodzie run");
 			System.out.println(e.getMessage());
-		}		
+		}
+	}
+
+	private void handleGet(String[] lineTokens) {
+		System.out.println("Wywołano metodę handleGet");
+		System.out.println(Arrays.toString(lineTokens));
+		
 	}	
 }
