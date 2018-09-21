@@ -1,3 +1,4 @@
+
 package http_chat;
 
 import java.io.*;
@@ -16,7 +17,7 @@ public class HttpServer {
 					clientThread.start();
 				}
 		} catch(IOException e){
-			System.out.println("Bła∂ w metodzie main");
+			System.out.println("Błąd w metodzie main");
 			System.out.println(e.getMessage());
 		}
 	}
@@ -32,27 +33,42 @@ class HttpServerHandler implements Runnable {
 	}
 	
 	public void run(){
-		Scanner httpRequest;
-		int i =0;
+		String[] headerTokens;
+		ArrayList<String> lines =new ArrayList<>();
 		try{
-			Scanner testServerReader = new Scanner(new InputStreamReader(incoming.getInputStream())); 
+			Scanner testServerReader = new Scanner(new InputStreamReader(incoming.getInputStream()));
 			while(testServerReader.hasNextLine()){
 				line = testServerReader.nextLine();
-				String [] lineTokens = line.split(" ");
-				if(lineTokens[0].equals("GET")){ handleGet(lineTokens);}
-				if(line.contentEquals("")) System.out.println("rn");
-				else System.out.println(line);
+				if(line.contentEquals("")) break;
+				lines.add(line);
 			};
+			System.out.println(lines);
+			headerTokens =lines.get(0).split(" ");
+			System.out.println("Nagłówek: " +Arrays.toString(headerTokens));
+			System.out.println(headerTokens.length);
+			if (headerTokens.length != 3){
+				System.out.println("Nieprawidłowa liczba parametrów w nagłówku");
+				System.exit(0);
+			}
+			if(headerTokens[0].equals("GET")) {
+				System.out.println("Obsługa żądania typu GET");
+				if (headerTokens[1].equals("/") || headerTokens[1].equals("/index.html")) handleGetIndex();
+				if (headerTokens[1].equals("/style.css")) handleGetStyle();
+			}
 		}
 		catch (IOException e){
-			System.out.println("Bła∂ w metodzie run");
+			System.out.println("Błąd w metodzie run");
 			System.out.println(e.getMessage());
 		}
 	}
 
-	private void handleGet(String[] lineTokens) {
-		System.out.println("Wywołano metodę handleGet");
-		System.out.println(Arrays.toString(lineTokens));
-		
+	private Scanner handleGetIndex() {
+		String test ="testujemy sobie coś";
+		System.out.println("Wywołano metodę handleGetIndex");
+		Scanner answer = new Scanner(test);
+		return answer;
 	}	
+	private void handleGetStyle(){
+		System.out.println("Wywołano metodę handleGetstyle");
+	}
 }
