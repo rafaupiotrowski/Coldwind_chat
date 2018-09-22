@@ -1,9 +1,11 @@
-
 package http_chat;
 
 import java.io.*;
 import java.io.IOException;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class HttpServer {
@@ -27,7 +29,7 @@ class HttpServerHandler implements Runnable {
 	
 	Socket incoming;
 	String line;
-	
+	PrintWriter answer;
 	public HttpServerHandler (Socket incomingConnection){
 		incoming = incomingConnection;
 	}
@@ -35,8 +37,10 @@ class HttpServerHandler implements Runnable {
 	public void run(){
 		String[] headerTokens;
 		ArrayList<String> lines =new ArrayList<>();
-		try{
-			Scanner testServerReader = new Scanner(new InputStreamReader(incoming.getInputStream()));
+		try
+			(Scanner testServerReader = new Scanner(new InputStreamReader(incoming.getInputStream()));
+				OutputStream outStream =incoming.getOutputStream()){
+			PrintWriter out = new PrintWriter(new OutputStreamWriter(outStream, "UTF-8"));
 			while(testServerReader.hasNextLine()){
 				line = testServerReader.nextLine();
 				if(line.contentEquals("")) break;
@@ -52,9 +56,18 @@ class HttpServerHandler implements Runnable {
 			}
 			if(headerTokens[0].equals("GET")) {
 				System.out.println("Obsługa żądania typu GET");
-				if (headerTokens[1].equals("/") || headerTokens[1].equals("/index.html")) handleGetIndex();
+				if (headerTokens[1].equals("/") || headerTokens[1].equals("/index.html")){
+					String indexHtml =handleGetIndex();
+					System.out.println(indexHtml);
+					out.print("HTTP/1.1 200 OK \r\n");
+					out.print(indexHtml);
+					out.print("\r\n");
+					out.print("Content-Type: text/html");
+					out.print("\r\n");
+				}
 				if (headerTokens[1].equals("/style.css")) handleGetStyle();
 			}
+			
 		}
 		catch (IOException e){
 			System.out.println("Błąd w metodzie run");
@@ -62,11 +75,12 @@ class HttpServerHandler implements Runnable {
 		}
 	}
 
-	private Scanner handleGetIndex() {
-		String test ="testujemy sobie coś";
+	private String handleGetIndex() throws IOException {
 		System.out.println("Wywołano metodę handleGetIndex");
-		Scanner answer = new Scanner(test);
-		return answer;
+		Path pathToIndex =Paths.get("httpChatIndex.html");
+		String htmlContent =new String (Files.readAllBytes(pathToIndex));
+	//	System.out.println(htmlContent);
+		return htmlContent;
 	}	
 	private void handleGetStyle(){
 		System.out.println("Wywołano metodę handleGetstyle");
