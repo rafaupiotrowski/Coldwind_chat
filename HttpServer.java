@@ -9,11 +9,14 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class HttpServer {
+	static int i =0;
 	
 	public static void main (String[] args) {			
 		try (ServerSocket serverSocket = new ServerSocket(8080)){
 				while(true){	
 					Socket threadSocket = serverSocket.accept();
+					System.out.println(i);
+					i++;
 					Runnable serverHandler = new HttpServerHandler(threadSocket);
 					Thread clientThread = new Thread(serverHandler);
 					clientThread.start();
@@ -46,10 +49,9 @@ class HttpServerHandler implements Runnable {
 				if(line.contentEquals("")) break;
 				lines.add(line);
 			};
-			System.out.println(lines);
+//			System.out.println(lines);
 			headerTokens =lines.get(0).split(" ");
 			System.out.println("Nagłówek: " +Arrays.toString(headerTokens));
-			System.out.println(headerTokens.length);
 			if (headerTokens.length != 3){
 				System.out.println("Nieprawidłowa liczba parametrów w nagłówku");
 				System.exit(0);
@@ -58,12 +60,13 @@ class HttpServerHandler implements Runnable {
 				System.out.println("Obsługa żądania typu GET");
 				if (headerTokens[1].equals("/") || headerTokens[1].equals("/index.html")){
 					String indexHtml =handleGetIndex();
-					System.out.println(indexHtml);
 					out.print("HTTP/1.1 200 OK \r\n");
+					out.print("Content-Type: text/html; charset=utf-8\r\n");
+					out.print("\r\n");
 					out.print(indexHtml);
-					out.print("\r\n");
-					out.print("Content-Type: text/html");
-					out.print("\r\n");
+					out.flush();
+					out.close();
+					incoming.close();
 				}
 				if (headerTokens[1].equals("/style.css")) handleGetStyle();
 			}
