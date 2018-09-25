@@ -34,11 +34,15 @@ class HttpServerHandler implements Runnable {
 	String line;
 	String handleAnswer;
 	String statusCode;
+	String resource;
 	HashMap <String, String> statusCodeDescription = new HashMap<>();
+	HashMap<String, String> resources = new HashMap<>();
 
 	public HttpServerHandler (Socket incomingConnection){
 		incoming = incomingConnection;
 		statusCodeDescription.put("200", "OK!");
+		resources.put("/", "httpChatIndex.html");
+		resources.put("/index.html", "httpChatIndex.html");	
 	}
 	
 	public void run(){
@@ -61,16 +65,13 @@ class HttpServerHandler implements Runnable {
 			}
 			if(headerTokens[0].equals("GET")) {
 				System.out.println("Obsługa żądania typu GET");
-				if (headerTokens[1].equals("/") || headerTokens[1].equals("/index.html")){
-					handleAnswer = handleGetIndex();
-				}
+				handleAnswer =handleGet(headerTokens[1]);
 				out.print("HTTP/1.1 " + statusCode + " " + statusCodeDescription.get(statusCode) + "\r\n");
 				out.print("Content-Type: text/html; charset=utf-8\r\n");
 				out.print("\r\n");
 				out.print(handleAnswer);
 				out.close();
 				incoming.close();
-				if (headerTokens[1].equals("/style.css")) handleGetStyle();
 			}
 			
 		}
@@ -80,14 +81,12 @@ class HttpServerHandler implements Runnable {
 		}
 	}
 
-	private String handleGetIndex() throws IOException {
-		System.out.println("Wywołano metodę handleGetIndex");
-		Path pathToIndex =Paths.get("httpChatIndex.html");
+	private String handleGet(String resource) throws IOException {
+		System.out.println("Wywołano metodę handleGet");
+		resource = resources.get(resource);
+		Path pathToIndex =Paths.get(resource);
 		String htmlContent =new String (Files.readAllBytes(pathToIndex));
-		statusCode = "404";
+		statusCode = "200";
 		return htmlContent;
 	}	
-	private void handleGetStyle(){
-		System.out.println("Wywołano metodę handleGetstyle");
-	}
 }
