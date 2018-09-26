@@ -43,6 +43,7 @@ class HttpServerHandler implements Runnable {
 		statusCodeDescription.put("200", "OK!");
 		resources.put("/", "httpChatIndex.html");
 		resources.put("/index.html", "httpChatIndex.html");	
+		resources.put("/style.css", "httpChatStyle.css");	
 	}
 	
 	public void run(){
@@ -66,13 +67,14 @@ class HttpServerHandler implements Runnable {
 			if(headerTokens[0].equals("GET")) {
 				System.out.println("Obsługa żądania typu GET");
 				handleAnswer =handleGet(headerTokens[1]);
-				out.print("HTTP/1.1 " + statusCode + " " + statusCodeDescription.get(statusCode) + "\r\n");
-				out.print("Content-Type: text/html; charset=utf-8\r\n");
-				out.print("\r\n");
-				out.print(handleAnswer);
-				out.close();
-				incoming.close();
 			}
+			out.print("HTTP/1.1 " + statusCode + " " + statusCodeDescription.get(statusCode) + "\r\n");
+			out.print("Content-Type: text/html; charset=utf-8\r\n");
+			out.print("\r\n");
+			out.print(handleAnswer);
+			out.close();
+			incoming.close();
+			System.out.println("Odpowiedź wysłano, kod odpowiedzi: " + statusCode);
 			
 		}
 		catch (IOException e){
@@ -81,12 +83,18 @@ class HttpServerHandler implements Runnable {
 		}
 	}
 
-	private String handleGet(String resource) throws IOException {
+	private String handleGet(String aResource) throws IOException {
 		System.out.println("Wywołano metodę handleGet");
-		resource = resources.get(resource);
-		Path pathToIndex =Paths.get(resource);
-		String htmlContent =new String (Files.readAllBytes(pathToIndex));
-		statusCode = "200";
-		return htmlContent;
+		if(resources.containsKey(aResource)){
+			resource = resources.get(aResource);
+			Path pathToIndex =Paths.get(resource);
+			String htmlContent =new String (Files.readAllBytes(pathToIndex));
+			statusCode = "200";
+			return htmlContent;
+		} else{
+			System.out.println("Nieprawidłowe żądanie zasobu: " + aResource);
+			statusCode = "404";
+			return "";
+		}		
 	}	
 }
