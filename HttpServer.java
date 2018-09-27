@@ -37,6 +37,7 @@ class HttpServerHandler implements Runnable {
 	String resource;
 	HashMap <String, String> statusCodeDescription = new HashMap<>();
 	HashMap<String, String> resources = new HashMap<>();
+	HashMap<String, String> contentType = new HashMap<>();
 
 	public HttpServerHandler (Socket incomingConnection){
 		incoming = incomingConnection;
@@ -44,6 +45,11 @@ class HttpServerHandler implements Runnable {
 		resources.put("/", "httpChatIndex.html");
 		resources.put("/index.html", "httpChatIndex.html");	
 		resources.put("/style.css", "httpChatStyle.css");	
+		resources.put("/main.js", "httpChatMain.js");
+		contentType.put("/", "text/html; charset=utf-8");
+		contentType.put("/index.html", "text/html; charset=utf-8");
+		contentType.put("/style.css", "text/css; charset=utf-8");
+		contentType.put("/main.js", "application/javascript");
 	}
 	
 	public void run(){
@@ -69,7 +75,7 @@ class HttpServerHandler implements Runnable {
 				handleAnswer =handleGet(headerTokens[1]);
 			}
 			out.print("HTTP/1.1 " + statusCode + " " + statusCodeDescription.get(statusCode) + "\r\n");
-			out.print("Content-Type: text/html; charset=utf-8\r\n");
+			out.print("Content-Type: " +contentType.get(headerTokens[1]) +"\r\n");
 			out.print("\r\n");
 			out.print(handleAnswer);
 			out.close();
