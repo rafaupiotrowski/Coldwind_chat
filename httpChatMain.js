@@ -17,7 +17,7 @@ $(function(){
 		var text_json = JSON.stringify({
 			"text": text
 		});
-		$ajax({
+		$.ajax({
 			url: '/chat',
 			type: 'POST',
 			data: text_json,
