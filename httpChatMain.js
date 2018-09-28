@@ -42,7 +42,7 @@ $(function(){
 				console.log("Failed to fech new messages: " + errorThrown);
 				
 				//Wywoałaj ponownie funkcję za sekundę.
-				window.setTimeout(chekForNewMessages, 1000);
+				window.setTimeout(checkForNewMessages, 1000);
 			},
 			success: function(data) {
 				last_message_id = data["last_messages_id"];
