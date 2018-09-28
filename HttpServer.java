@@ -12,7 +12,7 @@ public class HttpServer {
 	static int i =0;
 	
 	public static void main (String[] args) {			
-		try (ServerSocket serverSocket = new ServerSocket(8080)){
+		try (ServerSocket serverSocket = new ServerSocket(8880)){
 				while(true){	
 					Socket threadSocket = serverSocket.accept();
 					System.out.println(i);
@@ -55,14 +55,16 @@ class HttpServerHandler implements Runnable {
 	public void run(){
 		String[] headerTokens;
 		ArrayList<String> lines =new ArrayList<>();
+		String formData;
 		try
-			(Scanner testServerReader = new Scanner(new InputStreamReader(incoming.getInputStream()));
+			(BufferedReader testServerReader = new BufferedReader(new InputStreamReader(incoming.getInputStream()));
 				OutputStream outStream =incoming.getOutputStream()){
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(outStream, "UTF-8"));
-			while(testServerReader.hasNextLine()){
-				line = testServerReader.nextLine();
-				if(line.contentEquals("")) break;
+			while(!(line = testServerReader.readLine()).contentEquals("") ){
+				System.out.println(line);
+//				if(line.contentEquals("")) break;
 				lines.add(line);
+				System.out.println(line);
 			};
 			headerTokens =lines.get(0).split(" ");
 			System.out.println("Nagłówek: " +Arrays.toString(headerTokens));
@@ -73,6 +75,16 @@ class HttpServerHandler implements Runnable {
 			if(headerTokens[0].equals("GET")) {
 				System.out.println("Obsługa żądania typu GET");
 				handleAnswer =handleGet(headerTokens[1]);
+			}
+			else if (headerTokens[0].equals("POST")){
+				System.out.println("Obsługa żądania POST");
+				System.out.println(lines);
+				for(int i=0; i<2; i++){
+					System.out.println("Pętla for");
+				formData =testServerReader.readLine();
+				System.out.println(formData);
+				}
+				handleAnswer ="test";
 			}
 			out.print("HTTP/1.1 " + statusCode + " " + statusCodeDescription.get(statusCode) + "\r\n");
 			out.print("Content-Type: " +contentType.get(headerTokens[1]) +"\r\n");
@@ -90,7 +102,6 @@ class HttpServerHandler implements Runnable {
 	}
 
 	private String handleGet(String aResource) throws IOException {
-		System.out.println("Wywołano metodę handleGet");
 		if(resources.containsKey(aResource)){
 			resource = resources.get(aResource);
 			Path pathToIndex =Paths.get(resource);
