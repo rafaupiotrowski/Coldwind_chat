@@ -7,11 +7,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import com.google.gson.*;
 
 public class HttpServer {
 	static int i =0;
 	
-	public static void main (String[] args) {			
+	public static void main (String[] args) {
 		try (ServerSocket serverSocket = new ServerSocket(8880)){
 				while(true){	
 					Socket threadSocket = serverSocket.accept();
@@ -35,11 +36,17 @@ class HttpServerHandler implements Runnable {
 	String handleAnswer;
 	String statusCode;
 	String resource;
+	String data;
+	int last_message_id;
+	Gson gson;
 	HashMap <String, String> statusCodeDescription = new HashMap<>();
 	HashMap<String, String> resources = new HashMap<>();
 	HashMap<String, String> contentType = new HashMap<>();
 
 	public HttpServerHandler (Socket incomingConnection){
+		data ="";
+		last_message_id=0;
+		gson =new GsonBuilder().create();
 		incoming = incomingConnection;
 		statusCodeDescription.put("200", "OK!");
 		resources.put("/", "httpChatIndex.html");
@@ -55,16 +62,15 @@ class HttpServerHandler implements Runnable {
 	public void run(){
 		String[] headerTokens;
 		ArrayList<String> lines =new ArrayList<>();
-		String formData;
+		char[] formData =new char[64];
 		try
 			(BufferedReader testServerReader = new BufferedReader(new InputStreamReader(incoming.getInputStream()));
 				OutputStream outStream =incoming.getOutputStream()){
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(outStream, "UTF-8"));
-			while(!(line = testServerReader.readLine()).contentEquals("") ){
+			while(!(line = testServerReader.readLine()).contentEquals("kuniec") ){
 				System.out.println(line);
-//				if(line.contentEquals("")) break;
 				lines.add(line);
-				System.out.println(line);
+				if(line.contentEquals("")) break;
 			};
 			headerTokens =lines.get(0).split(" ");
 			System.out.println("Nagłówek: " +Arrays.toString(headerTokens));
@@ -79,11 +85,8 @@ class HttpServerHandler implements Runnable {
 			else if (headerTokens[0].equals("POST")){
 				System.out.println("Obsługa żądania POST");
 				System.out.println(lines);
-				for(int i=0; i<2; i++){
-					System.out.println("Pętla for");
-				formData =testServerReader.readLine();
-				System.out.println(formData);
-				}
+				data =new String(formData);
+				System.out.println(data);
 				handleAnswer ="test";
 			}
 			out.print("HTTP/1.1 " + statusCode + " " + statusCodeDescription.get(statusCode) + "\r\n");
