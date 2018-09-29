@@ -13,12 +13,13 @@ public class HttpServer {
 	static int i =0;
 	
 	public static void main (String[] args) {
+		SimpleChatWWW  website = new SimpleChatWWW();
 		try (ServerSocket serverSocket = new ServerSocket(8880)){
 				while(true){	
 					Socket threadSocket = serverSocket.accept();
 					System.out.println(i);
 					i++;
-					Runnable serverHandler = new HttpServerHandler(threadSocket);
+					Runnable serverHandler = new HttpServerHandler(threadSocket, website);
 					Thread clientThread = new Thread(serverHandler);
 					clientThread.start();
 				}
@@ -32,37 +33,25 @@ public class HttpServer {
 class HttpServerHandler implements Runnable {
 	
 	Socket incoming;
+	SimpleChatWWW website;
+	String answer;
 	String line;
 	String handleAnswer;
 	String statusCode;
 	String resource;
 	String data;
-	int last_message_id;
-	Gson gson;
-	HashMap <String, String> statusCodeDescription = new HashMap<>();
-	HashMap<String, String> resources = new HashMap<>();
-	HashMap<String, String> contentType = new HashMap<>();
+	String[] headerTokens;
+	String[] headers;
+	ArrayList<String> lines =new ArrayList<>();
+	HashMap<String, String> request = new HashMap<>();
+	char[] formData =new char[64];
 
-	public HttpServerHandler (Socket incomingConnection){
-		data ="";
-		last_message_id=0;
-		gson =new GsonBuilder().create();
+	public HttpServerHandler (Socket incomingConnection, SimpleChatWWW aWebsite){
 		incoming = incomingConnection;
-		statusCodeDescription.put("200", "OK!");
-		resources.put("/", "httpChatIndex.html");
-		resources.put("/index.html", "httpChatIndex.html");	
-		resources.put("/style.css", "httpChatStyle.css");	
-		resources.put("/main.js", "httpChatMain.js");
-		contentType.put("/", "text/html; charset=utf-8");
-		contentType.put("/index.html", "text/html; charset=utf-8");
-		contentType.put("/style.css", "text/css; charset=utf-8");
-		contentType.put("/main.js", "application/javascript");
+		website = aWebsite;
 	}
 	
 	public void run(){
-		String[] headerTokens;
-		ArrayList<String> lines =new ArrayList<>();
-		char[] formData =new char[64];
 		try
 			(BufferedReader testServerReader = new BufferedReader(new InputStreamReader(incoming.getInputStream()));
 				OutputStream outStream =incoming.getOutputStream()){
@@ -78,17 +67,19 @@ class HttpServerHandler implements Runnable {
 				System.out.println("Nieprawidłowa liczba parametrów w nagłówku");
 				System.exit(0);
 			}
-			if(headerTokens[0].equals("GET")) {
-				System.out.println("Obsługa żądania typu GET");
-				handleAnswer =handleGet(headerTokens[1]);
+			
+			request.put("method", headerTokens[0]);
+			request.put("query", headerTokens[1] );
+			request.put("version", headerTokens[2] );
+			
+			for (int i=1; i==lines.size(); i++){
+				headers =lines.get(i).split(" ");
+				request.put(headers[0], headers[1]);
 			}
-			else if (headerTokens[0].equals("POST")){
-				System.out.println("Obsługa żądania POST");
-				System.out.println(lines);
-				data =new String(formData);
-				System.out.println(data);
-				handleAnswer ="test";
-			}
+
+			if (headerTokens[0].equals("POST")) receiveAll();
+			
+			answer = website.handleHttpRequest(request);
 			out.print("HTTP/1.1 " + statusCode + " " + statusCodeDescription.get(statusCode) + "\r\n");
 			out.print("Content-Type: " +contentType.get(headerTokens[1]) +"\r\n");
 			out.print("\r\n");
@@ -102,19 +93,5 @@ class HttpServerHandler implements Runnable {
 			System.out.println("Błąd w metodzie run");
 			System.out.println(e.getMessage());
 		}
-	}
-
-	private String handleGet(String aResource) throws IOException {
-		if(resources.containsKey(aResource)){
-			resource = resources.get(aResource);
-			Path pathToIndex =Paths.get(resource);
-			String htmlContent =new String (Files.readAllBytes(pathToIndex));
-			statusCode = "200";
-			return htmlContent;
-		} else{
-			System.out.println("Nieprawidłowe żądanie zasobu: " + aResource);
-			statusCode = "404";
-			return "";
-		}		
 	}	
 }
