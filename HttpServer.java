@@ -77,16 +77,18 @@ class HttpServerHandler implements Runnable {
 				request.put(headers[0], headers[1]);
 			}
 
-			if (headerTokens[0].equals("POST")) receiveAll();
+			if (headerTokens[0].equals("POST")) receiveAll(testServerReader);
+			System.out.println(request);
 			
 			answer = website.handleHttpRequest(request);
-			out.print("HTTP/1.1 " + statusCode + " " + statusCodeDescription.get(statusCode) + "\r\n");
-			out.print("Content-Type: " +contentType.get(headerTokens[1]) +"\r\n");
+			System.out.println(answer);
+			out.print("HTTP/1.1 " + "200" + " OK \r\n"); // + statusCodeDescription.get(statusCode) + "\r\n");
+			out.print("Content-Type: text/html; charset=utf-8 \r\n");// +contentType.get(headerTokens[1]) +"\r\n");
 			out.print("\r\n");
-			out.print(handleAnswer);
+			out.print(answer);
 			out.close();
 			incoming.close();
-			System.out.println("Odpowiedź wysłano, kod odpowiedzi: " + statusCode);
+			System.out.println("Odpowiedź wysłano");
 			
 		}
 		catch (IOException e){
@@ -94,4 +96,12 @@ class HttpServerHandler implements Runnable {
 			System.out.println(e.getMessage());
 		}
 	}	
+	final void receiveAll(BufferedReader aTestServerReader) throws IOException{
+		StringBuilder postData = new StringBuilder();
+		char postDataChar;
+		while((postDataChar = (char) aTestServerReader.read()) != -1){
+			postData.append(postDataChar);
+		}
+		request.put("data", postData.toString()) ;
+	}
 }
