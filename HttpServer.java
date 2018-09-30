@@ -34,10 +34,9 @@ class HttpServerHandler implements Runnable {
 	
 	Socket incoming;
 	SimpleChatWWW website;
-	String answer;
+	HashMap <String, String> answer;
 	String line;
 	String handleAnswer;
-	String statusCode;
 	String resource;
 	String data;
 	String[] headerTokens;
@@ -61,6 +60,7 @@ class HttpServerHandler implements Runnable {
 				lines.add(line);
 				if(line.contentEquals("")) break;
 			};
+			System.out.println("Rozmiar tablicy lines: " +lines.size());
 			headerTokens =lines.get(0).split(" ");
 			System.out.println("Nagłówek: " +Arrays.toString(headerTokens));
 			if (headerTokens.length != 3){
@@ -72,20 +72,26 @@ class HttpServerHandler implements Runnable {
 			request.put("query", headerTokens[1] );
 			request.put("version", headerTokens[2] );
 			
-			for (int i=1; i==lines.size(); i++){
-				headers =lines.get(i).split(" ");
+			for (int z=1; z<4; z++){
+				System.out.println("Tworzenie nagłówków...");
+				headers =lines.get(z).split(" ");
+				System.out.println(headers[0] +" " + headers[1]);
 				request.put(headers[0], headers[1]);
 			}
 
-			if (headerTokens[0].equals("POST")) receiveAll(testServerReader);
+			if (headerTokens[0].equals("POST")){
+				System.out.println(request);
+				System.out.println("Długość dodatkowych danych: " + request.get("Content-Length:"));
+				receiveAll(testServerReader, Integer.parseInt(request.get("Content-Length:")));
+			}
 			System.out.println(request);
 			
 			answer = website.handleHttpRequest(request);
-			System.out.println(answer);
-			out.print("HTTP/1.1 " + "200" + " OK \r\n"); // + statusCodeDescription.get(statusCode) + "\r\n");
-			out.print("Content-Type: text/html; charset=utf-8 \r\n");// +contentType.get(headerTokens[1]) +"\r\n");
+//			System.out.println(answer);
+			out.print("HTTP/1.1 " + answer.get("statusCode") + " "+answer.get("statusCodeDescription") + "\r\n");
+			out.print("Content-Type: " +answer.get("contentType") + "\r\n");
 			out.print("\r\n");
-			out.print(answer);
+			out.print(answer.get("data"));
 			out.close();
 			incoming.close();
 			System.out.println("Odpowiedź wysłano");
@@ -96,10 +102,11 @@ class HttpServerHandler implements Runnable {
 			System.out.println(e.getMessage());
 		}
 	}	
-	final void receiveAll(BufferedReader aTestServerReader) throws IOException{
+	final void receiveAll(BufferedReader aTestServerReader, int length) throws IOException{
 		StringBuilder postData = new StringBuilder();
 		char postDataChar;
-		while((postDataChar = (char) aTestServerReader.read()) != -1){
+		for(int i=0; i<length; i++){
+			postDataChar = (char) aTestServerReader.read();
 			postData.append(postDataChar);
 		}
 		request.put("data", postData.toString()) ;
