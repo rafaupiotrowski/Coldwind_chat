@@ -22,6 +22,7 @@ public class SimpleChatWWW {
 	HashMap <String, String> statusCodeDescription = new HashMap<>();
 	HashMap<String, String> resources = new HashMap<>();
 	HashMap<String, String> contentType = new HashMap<>();
+	
 
 	public SimpleChatWWW (){
 		data ="";
@@ -38,34 +39,47 @@ public class SimpleChatWWW {
 		contentType.put("/main.js", "application/javascript");
 	}
 	
-	public String handleHttpRequest(HashMap<String, String> aRequest) throws IOException{
+	public HashMap<String, String> handleHttpRequest(HashMap<String, String> aRequest) throws IOException{
 		System.out.println("Wywołano metodę: handleHTTPRequest");
+		HashMap<String, String> response = new HashMap<>();
 		if(aRequest.get("method").equals("GET")){
 			return handleGet(aRequest);
 		}
 		else if(aRequest.get("method").equals("POST")){
 			return handlePost(aRequest);
 		}
-		else return "Błąd";
+		else{
+			response.put("statusCode", "400");
+			response.put("statusCodeDescription", "Bad Request");
+			return response;
+		}
 	}
 
-	private String handlePost(HashMap<String, String> aRequest) throws IOException{
+	private HashMap<String, String> handlePost(HashMap<String, String> aRequest) throws IOException{
 		System.out.println("Obsługa żądania POST");
-		return "test";
+		HashMap<String, String> response = new HashMap<>();
+		return response;
 	}
-	private String handleGet(HashMap<String, String> aRequest) throws IOException {
+	
+	private HashMap<String, String> handleGet(HashMap<String, String> aRequest) throws IOException {		
+		HashMap<String, String> response = new HashMap<>();
 		String aResource =aRequest.get("query");
 		if(resources.containsKey(aResource)){
 			resource = resources.get(aResource);
 			Path pathToIndex =Paths.get(resource);
-			String htmlContent =new String (Files.readAllBytes(pathToIndex));
+			String resourceContent =new String (Files.readAllBytes(pathToIndex));
 			statusCode = "200";
+			response.put("statusCode", "200");
+			response.put("statusCodeDescription", "OK");
+			response.put("data", resourceContent );
+			response.put("contentType", contentType.get(aResource));
 //			System.out.println(htmlContent);
-			return htmlContent;
+			return response;
 		} else{
 			System.out.println("Nieprawidłowe żądanie zasobu: " + aResource);
-			statusCode = "404";
-			return "";
+			response.put("statusCode", "400");
+			response.put("statusCodeDescription", "Bad Request");
+			return response;
 		}		
 	}
 }
