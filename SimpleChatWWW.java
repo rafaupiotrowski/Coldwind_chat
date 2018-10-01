@@ -9,6 +9,8 @@ import java.util.HashMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class SimpleChatWWW {
 		
@@ -17,8 +19,11 @@ public class SimpleChatWWW {
 	String statusCode;
 	String resource;
 	String data;
+	int newest_message_id;
 	int last_message_id;
 	Gson gson;
+	JsonParser parser = new JsonParser();
+	JsonObject last_message_id_json = new JsonObject();
 	HashMap <String, String> statusCodeDescription = new HashMap<>();
 	HashMap<String, String> resources = new HashMap<>();
 	HashMap<String, String> contentType = new HashMap<>();
@@ -57,6 +62,11 @@ public class SimpleChatWWW {
 
 	private HashMap<String, String> handlePost(HashMap<String, String> aRequest) throws IOException{
 		System.out.println("Obsługa żądania POST");
+		if(aRequest.get("query").equals("/messages")) {
+			last_message_id_json = parser.parse(aRequest.get("data")).getAsJsonObject();
+			last_message_id =last_message_id_json.get("last_message_id").getAsInt();
+			System.out.println("Odczytano last_message_id: " + last_message_id);
+		}
 		HashMap<String, String> response = new HashMap<>();
 		return response;
 	}
@@ -73,7 +83,6 @@ public class SimpleChatWWW {
 			response.put("statusCodeDescription", "OK");
 			response.put("data", resourceContent );
 			response.put("contentType", contentType.get(aResource));
-//			System.out.println(htmlContent);
 			return response;
 		} else{
 			System.out.println("Nieprawidłowe żądanie zasobu: " + aResource);
