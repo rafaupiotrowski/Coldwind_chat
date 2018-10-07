@@ -30,7 +30,7 @@ public class SimpleChatWWW {
 	JsonParser parser = new JsonParser();
 	JsonObject last_message_id_json = new JsonObject();
 	JsonObject text = new JsonObject();
-	String[] message= new String[2];
+	
 	String[] testMessages = new String[1]; 
 	HashMap <String, String> statusCodeDescription = new HashMap<>();
 	HashMap<String, String> resources = new HashMap<>();
@@ -42,8 +42,6 @@ public class SimpleChatWWW {
 		gson =new GsonBuilder().create();
 		data ="";
 		last_message_id=0;
-		testMessages[0] ="{\"last_message_id\": \"1\", \"testMessages\":[ [\"100\", \"heja\"], [\"200\", \"joł\"]] }";
-		String messagesToSend;
 		allMessages = new ArrayList<String[]>();
 		statusCodeDescription.put("200", "OK!");
 		resources.put("/", "httpChatIndex.html");
@@ -85,7 +83,7 @@ public class SimpleChatWWW {
 			JsonObject test = new JsonObject();
 			JsonPrimitive currentMessageId = new JsonPrimitive(allMessages.size()); //allMessages.size();
 			JsonArray messagesToSendTest =new JsonArray();
-			for(int i=0; i<allMessages.size(); i++){
+			for(int i=last_message_id; i<allMessages.size(); i++){
 				String element1 =allMessages.get(i)[0];
 				String element2 =allMessages.get(i)[1];
 				JsonArray singleArray = new JsonArray();
@@ -103,6 +101,7 @@ public class SimpleChatWWW {
 				System.out.println("Wysłano" + response);
 
 		} else if(aRequest.get("query").equals("/chat")){
+			String[] message= new String[2];
 			message[0] = "123";
 			text =parser.parse(aRequest.get("data")).getAsJsonObject();
 			message[1] = text.get("text").getAsString();
@@ -110,7 +109,10 @@ public class SimpleChatWWW {
 			response.put("statusCode", "200");
 			response.put("statusCodeDescription", "OK");
 			System.out.println(Arrays.toString(message));
-		}
+			for(String[] test: allMessages){
+			System.out.println("Wszystkie wiadomości: " +Arrays.toString(test));
+			}
+			}
 		return response;
 	}
 	
