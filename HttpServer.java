@@ -56,11 +56,11 @@ class HttpServerHandler implements Runnable {
 				OutputStream outStream =incoming.getOutputStream()){
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(outStream, "UTF-8"));
 			while(!(line = testServerReader.readLine()).contentEquals("kuniec") ){
-				System.out.println(line);
+//				System.out.println(line);
 				lines.add(line);
 				if(line.contentEquals("")) break;
 			};
-			System.out.println("Rozmiar tablicy lines: " +lines.size());
+//			System.out.println("Rozmiar tablicy lines: " +lines.size());
 			headerTokens =lines.get(0).split(" ");
 			System.out.println("Nagłówek: " +Arrays.toString(headerTokens));
 			if (headerTokens.length != 3){
