@@ -44,7 +44,7 @@ $(function() {
         console.log("Failed to fetch new messages: " + errorThrown);
 
         // Wywołaj ponownie funkcje za sekundę.
-        window.setTimeout(checkForNewMessages, 10000);        
+        window.setTimeout(checkForNewMessages, 1000);        
       },
       success: function(data) {
         last_message_id = data["last_message_id"];
@@ -64,7 +64,7 @@ $(function() {
         chat.animate({ scrollTop: chat[0].scrollHeight }, 500);
 
         // Wywołaj ponownie funkcje za sekundę.
-        window.setTimeout(checkForNewMessages, 10000);        
+        window.setTimeout(checkForNewMessages, 1000);        
       },
     });
   }
