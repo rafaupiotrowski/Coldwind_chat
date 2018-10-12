@@ -52,7 +52,7 @@ class HttpServerHandler implements Runnable {
 	
 	public void run(){
 		try
-			(BufferedReader testServerReader = new BufferedReader(new InputStreamReader(incoming.getInputStream()));
+			(BufferedReader testServerReader = new BufferedReader(new InputStreamReader(incoming.getInputStream(), "UTF-8"));
 				OutputStream outStream =incoming.getOutputStream()){
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(outStream, "UTF-8"));
 			while(!(line = testServerReader.readLine()).contentEquals("kuniec") ){
@@ -79,7 +79,7 @@ class HttpServerHandler implements Runnable {
 			if (headerTokens[0].equals("POST")){
 				receiveAll(testServerReader, Integer.parseInt(request.get("Content-Length:")));
 			}
-			System.out.println(request);
+//			System.out.println(request);
 			
 			answer = website.handleHttpRequest(request);
 			out.print("HTTP/1.1 " + answer.get("statusCode") + " "+answer.get("statusCodeDescription") + "\r\n");
@@ -88,7 +88,7 @@ class HttpServerHandler implements Runnable {
 			out.print(answer.get("data"));
 			out.close();
 			incoming.close();
-			System.out.println("Odpowiedź wysłano");
+//			System.out.println("Odpowiedź wysłano");
 			
 		}
 		catch (IOException e){
@@ -101,8 +101,11 @@ class HttpServerHandler implements Runnable {
 		char postDataChar;
 		for(int i=0; i<length; i++){
 			postDataChar = (char) aTestServerReader.read();
+			System.out.println(postDataChar);
 			postData.append(postDataChar);
 		}
+
+		System.out.println(postData.length());
 		request.put("data", postData.toString()) ;
 	}
 }
