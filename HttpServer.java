@@ -56,11 +56,9 @@ class HttpServerHandler implements Runnable {
 				OutputStream outStream =incoming.getOutputStream()){
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(outStream, "UTF-8"));
 			while(!(line = testServerReader.readLine()).contentEquals("kuniec") ){
-//				System.out.println(line);
 				lines.add(line);
 				if(line.contentEquals("")) break;
 			};
-//			System.out.println("Rozmiar tablicy lines: " +lines.size());
 			headerTokens =lines.get(0).split(" ");
 			System.out.println("Nagłówek: " +Arrays.toString(headerTokens));
 			if (headerTokens.length != 3){
@@ -71,23 +69,19 @@ class HttpServerHandler implements Runnable {
 			request.put("method", headerTokens[0]);
 			request.put("query", headerTokens[1] );
 			request.put("version", headerTokens[2] );
+			request.put("senderIP", incoming.getRemoteSocketAddress().toString());
 			
 			for (int z=1; z<4; z++){
-				System.out.println("Tworzenie nagłówków...");
 				headers =lines.get(z).split(" ");
-				System.out.println(headers[0] +" " + headers[1]);
 				request.put(headers[0], headers[1]);
 			}
 
 			if (headerTokens[0].equals("POST")){
-				System.out.println(request);
-				System.out.println("Długość dodatkowych danych: " + request.get("Content-Length:"));
 				receiveAll(testServerReader, Integer.parseInt(request.get("Content-Length:")));
 			}
 			System.out.println(request);
 			
 			answer = website.handleHttpRequest(request);
-//			System.out.println(answer);
 			out.print("HTTP/1.1 " + answer.get("statusCode") + " "+answer.get("statusCodeDescription") + "\r\n");
 			out.print("Content-Type: " +answer.get("contentType") + "\r\n");
 			out.print("\r\n");
