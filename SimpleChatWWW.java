@@ -21,7 +21,6 @@ public class SimpleChatWWW {
 		
 	String line;
 	String handleAnswer;
-	String statusCode;
 	String resource;
 	String data;
 	int newest_message_id;
@@ -31,7 +30,6 @@ public class SimpleChatWWW {
 	JsonObject last_message_id_json = new JsonObject();
 	JsonObject text = new JsonObject();
 	
-	String[] testMessages = new String[1]; 
 	HashMap <String, String> statusCodeDescription = new HashMap<>();
 	HashMap<String, String> resources = new HashMap<>();
 	HashMap<String, String> contentType = new HashMap<>();
@@ -43,7 +41,6 @@ public class SimpleChatWWW {
 		data ="";
 		last_message_id=0;
 		allMessages = new ArrayList<String[]>();
-		statusCodeDescription.put("200", "OK!");
 		resources.put("/", "httpChatIndex.html");
 		resources.put("/index.html", "httpChatIndex.html");	
 		resources.put("/style.css", "httpChatStyle.css");	
@@ -94,15 +91,15 @@ public class SimpleChatWWW {
 			System.out.println(messagesToSendTest.toString());
 			test.add("last_message_id", currentMessageId);
 			test.add("messages", messagesToSendTest);
-				response.put("statusCode", "200");
-				response.put("statusCodeDescription", "OK");
-				response.put("data", test.toString());
-				response.put("contentType", "application/json");
-				System.out.println("Wysłano" + response);
+			response.put("statusCode", "200");
+			response.put("statusCodeDescription", "OK");
+			response.put("data", test.toString());
+			response.put("contentType", "application/json");
+			System.out.println("Wysłano" + response);
 
 		} else if(aRequest.get("query").equals("/chat")){
 			String[] message= new String[2];
-			message[0] = "123";
+			message[0] = aRequest.get("senderIP");
 			text =parser.parse(aRequest.get("data")).getAsJsonObject();
 			message[1] = text.get("text").getAsString();
 			allMessages.add(message);
@@ -123,7 +120,6 @@ public class SimpleChatWWW {
 			resource = resources.get(aResource);
 			Path pathToIndex =Paths.get(resource);
 			String resourceContent =new String (Files.readAllBytes(pathToIndex));
-			statusCode = "200";
 			response.put("statusCode", "200");
 			response.put("statusCodeDescription", "OK");
 			response.put("data", resourceContent );
